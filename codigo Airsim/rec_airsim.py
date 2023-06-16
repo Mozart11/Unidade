@@ -2,7 +2,7 @@ import airsim #pip install airsim
 import cv2
 import numpy as np
 import time
-# for car use CarClient()
+
 client = airsim.MultirotorClient()
 client.confirmConnection()
 client.enableApiControl(True)
@@ -24,7 +24,7 @@ def transform_input(responses):
 
     return im_final
 
-def index_of_biggest_object(object_list):
+"""def index_of_biggest_object(object_list):
     WIdthPlusHeight = []
     for i in range(len(object_list)):
         x, y, w, h = object_list[i]
@@ -39,7 +39,7 @@ def position_of_object(biggest_object):
         return "left"
     else:
         return "right"
-
+"""
 # Load Yolo
 net = cv2.dnn.readNetFromDarknet("yolov4-custom.cfg", "yolov4.weights")
 classes = []
@@ -92,10 +92,20 @@ while(True):
         if i in indexes:
             x, y, w, h = boxes[i]
             label = str(classes[class_ids[i]])
-            color = colors[i]
-            cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
-            cv2.putText(img, label, (x, y + 30), font, 1, color, 3)
+            #color = colors[i]
+            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            cv2.putText(img, label, (x, y + 30), font, 1, (0, 255, 0), 3)
+            object_center_x = center_x
+            object_center_y = center_y
+            image_center_x = img.width //2
+            image_center_y = img.height //2
+            delta_x = object_center_x - image_center_x
+            delta_y = object_center_y - image_center_y
+            max_speed = 1.0
+            speed_x = max_speed * (delta_x / image_center_x)
+            speed_y = max_speed * (delta_y / image_center_y)
 
+            client.moveByVelocity(speed_x, speed_y, 0, 1)
     #png_image = cv2.resize(png_image, dsize=None, fx=3, fy=3)
     cv2.imshow('img',img)
     key = cv2.waitKey(1)
